@@ -6,27 +6,37 @@ public class PlayerController : MonoBehaviour
 
     //Componentes
     private Animator _animator;
+    private CharacterController _controller;
     
-    [Header("Movimiento")]
-    public float _playerSpeed = 6;
-    public float _jumpForce = 6;
+    //Movimiento
+    private float _playerSpeed = 6;
+    private float _jumpForce = 6;
 
-    [Header("Inputs")]
+    //Inputs
     public Vector2 moveValue;
     InputAction _moveInput;
 
-    [Header("Camara")]
-    public float _smoothTime = 0.2f;
-    [SerializeField] private float _turnSmoothVelocity;
+    //Camara
+    private float _smoothTime = 0.2f;
+    private float _turnSmoothVelocity;
     private Transform _mainCamera;
+
+    //Gravedad
+    private float _gravity = -9.81f;
+    private Vector3 _playerGravity;
+        //Suelo
+        public Transform _sensor;
+        public LayerMask _groundLayer;
+        private float _sensorRadius = 4;
     
+
     void Awake()
     {
         _moveInput = InputSystem.actions["Move"];
-
+        _controller = GetComponent<CharacterController>();
         _animator = GetComponent<Animator>();
 
-        _mainCamera = _mainCamera.main.transform;
+        _mainCamera = Camera.main.transform;
     }
 
     void Update()
@@ -43,12 +53,21 @@ public class PlayerController : MonoBehaviour
         _animator.SetFloat("Horizontal", moveValue.x);
         _animator.SetFloat("Vertical", moveValue.y);
 
-        if(direction != moveValue.zero)
+        if (direction != Vector3.zero)
         {
-            float targetAngle = Mathf.Atan(direction.x, direction.z) * Mathf.Rad2Deg + _mainCamera.eulerAngles.y;
+            float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + _mainCamera.eulerAngles.y;
             float smoothAngle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref _turnSmoothVelocity, _smoothTime);
             transform.rotation = Quaternion.Euler(0, smoothAngle, 0);
+
+            Vector3 moveDirection = Quaternion.Euler(0, targetAngle, 0) * Vector3.forward;
+            _controller.Move(moveDirection.normalized * _playerSpeed * Time.deltaTime);
         }
     }
 
+    void OnDrawGizmos()
+    {
+        Gizmos.color = Color.white;
+        Gizmos.DrawWireSphere(_sensor.position, _sensorRadius);
+    }
+    
 }
