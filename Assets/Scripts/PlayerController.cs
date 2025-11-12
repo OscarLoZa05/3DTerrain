@@ -11,6 +11,7 @@ public class PlayerController : MonoBehaviour
     //Movimiento
     private float _playerSpeed = 6;
     private float _jumpForce = 6;
+    public bool _isDead = false;
 
     //Inputs
     public Vector2 moveValue;
@@ -43,6 +44,11 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+        if (_isDead == true)
+        {
+            return;
+        }
+        
         moveValue = _moveInput.ReadValue<Vector2>();
 
 
@@ -105,6 +111,21 @@ public class PlayerController : MonoBehaviour
     {
         Gizmos.color = Color.white;
         Gizmos.DrawWireSphere(_sensor.position, _sensorRadius);
+    }
+
+    void OnTriggerEnter(Collider collider)
+    {
+        if (collider.gameObject.layer == 6)
+        {
+            Debug.Log("Mierda");
+            Death();
+        }
+    }
+    
+    void Death()
+    {
+        _animator.SetTrigger("IsDead");
+        _isDead = true;
     }
     
 }
